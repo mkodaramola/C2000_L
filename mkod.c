@@ -1,0 +1,221 @@
+#include "driverlib.h"
+#include "device.h"
+#include "board.h"
+#include "mkod.h"
+
+#define EPWM_TIMER_TBPRD  (DEVICE_SYSCLK_FREQ / 2000)
+#define EPWM_MAX          (EPWM_TIMER_TBPRD - 1)
+
+#define EPWM_TIMER_TBPRD_SERVO  (DEVICE_SYSCLK_FREQ / 1600)
+#define EPWM_MAX_SERVO          (EPWM_TIMER_TBPRD_SERVO - 1)
+
+
+//-----------------------------
+void initEPWM(EPWM_t* st_obj, const uint8_t GPIO_PIN) {
+
+
+
+    uint32_t EPWM_PARAM[5];
+
+    switch (GPIO_PIN) {
+        case 0:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM1_BASE, GPIO_0_EPWM1_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 1:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM1_BASE, GPIO_1_EPWM1_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 2:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM2_BASE, GPIO_2_EPWM2_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 3:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM2_BASE, GPIO_3_EPWM2_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 4:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM3_BASE, GPIO_4_EPWM3_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 5:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM3_BASE, GPIO_5_EPWM3_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 6:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM4_BASE, GPIO_6_EPWM4_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 7:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM4_BASE, GPIO_7_EPWM4_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 8:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM5_BASE, GPIO_8_EPWM5_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 9:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM5_BASE, GPIO_9_EPWM5_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 10: memcpy(EPWM_PARAM, (uint32_t[]){EPWM6_BASE, GPIO_10_EPWM6_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 11: memcpy(EPWM_PARAM, (uint32_t[]){EPWM6_BASE, GPIO_11_EPWM6_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        default: memcpy(EPWM_PARAM, (uint32_t[]){EPWM1_BASE, GPIO_0_EPWM1_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+    }
+
+    st_obj->base = EPWM_PARAM[0];
+    st_obj->compareReg = EPWM_PARAM[2];
+
+    SysCtl_disablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
+
+
+    // Add this before using the ePWM module
+    switch (EPWM_PARAM[0]) {
+        case EPWM1_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM1); break;
+        case EPWM2_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM2); break;
+        case EPWM3_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM3); break;
+        case EPWM4_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM4); break;
+        case EPWM5_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM5); break;
+        case EPWM6_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM6); break;
+        default: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM7); break;
+    }
+
+
+    GPIO_setPinConfig(EPWM_PARAM[1]);
+    GPIO_setPadConfig(GPIO_PIN, GPIO_PIN_TYPE_STD);
+    GPIO_setQualificationMode(GPIO_PIN, GPIO_QUAL_SYNC);
+
+    EPWM_setTimeBasePeriod(st_obj->base, EPWM_TIMER_TBPRD);
+    EPWM_setCounterCompareValue(st_obj->base, (EPWM_CounterCompareModule)st_obj->compareReg, EPWM_MAX);
+    EPWM_setTimeBaseCounterMode(st_obj->base, EPWM_COUNTER_MODE_UP);
+    EPWM_setClockPrescaler(st_obj->base, EPWM_CLOCK_DIVIDER_1, EPWM_HSCLOCK_DIVIDER_1);
+
+    EPWM_setActionQualifierAction(st_obj->base, (EPWM_ActionQualifierOutputModule)EPWM_PARAM[3], EPWM_AQ_OUTPUT_HIGH, (EPWM_ActionQualifierOutputEvent)EPWM_PARAM[4]);
+    EPWM_setActionQualifierAction(st_obj->base, (EPWM_ActionQualifierOutputModule)EPWM_PARAM[3], EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);
+
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
+
+
+}
+
+//----
+void ePWM_out(EPWM_t* st_obj, uint16_t pwmVal) {
+    pwmVal = (pwmVal * EPWM_MAX)/255;
+    pwmVal = EPWM_MAX - pwmVal;
+    EPWM_setCounterCompareValue(st_obj->base, (EPWM_CounterCompareModule)st_obj->compareReg, pwmVal);
+}
+
+
+// ------------------------------
+void servoInit(SERVO_t* st_obj, const uint8_t GPIO_PIN) {
+
+    uint32_t EPWM_PARAM[5];
+
+    switch (GPIO_PIN) {
+        case 0:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM1_BASE, GPIO_0_EPWM1_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 1:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM1_BASE, GPIO_1_EPWM1_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 2:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM2_BASE, GPIO_2_EPWM2_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 3:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM2_BASE, GPIO_3_EPWM2_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 4:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM3_BASE, GPIO_4_EPWM3_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 5:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM3_BASE, GPIO_5_EPWM3_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 6:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM4_BASE, GPIO_6_EPWM4_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 7:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM4_BASE, GPIO_7_EPWM4_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 8:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM5_BASE, GPIO_8_EPWM5_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 9:  memcpy(EPWM_PARAM, (uint32_t[]){EPWM5_BASE, GPIO_9_EPWM5_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        case 10: memcpy(EPWM_PARAM, (uint32_t[]){EPWM6_BASE, GPIO_10_EPWM6_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+        case 11: memcpy(EPWM_PARAM, (uint32_t[]){EPWM6_BASE, GPIO_11_EPWM6_B, EPWM_COUNTER_COMPARE_B, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB}, sizeof(EPWM_PARAM)); break;
+        default: memcpy(EPWM_PARAM, (uint32_t[]){EPWM1_BASE, GPIO_0_EPWM1_A, EPWM_COUNTER_COMPARE_A, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA}, sizeof(EPWM_PARAM)); break;
+    }
+
+    st_obj->base = EPWM_PARAM[0];
+    st_obj->compareReg = EPWM_PARAM[2];
+
+    SysCtl_disablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
+
+
+    // Add this before using the ePWM module
+    switch (EPWM_PARAM[0]) {
+        case EPWM1_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM1); break;
+        case EPWM2_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM2); break;
+        case EPWM3_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM3); break;
+        case EPWM4_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM4); break;
+        case EPWM5_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM5); break;
+        case EPWM6_BASE: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM6); break;
+        default: SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM7); break;
+    }
+
+
+    GPIO_setPinConfig(EPWM_PARAM[1]);
+    GPIO_setPadConfig(GPIO_PIN, GPIO_PIN_TYPE_STD);
+    GPIO_setQualificationMode(GPIO_PIN, GPIO_QUAL_SYNC);
+
+    EPWM_setTimeBasePeriod(st_obj->base, EPWM_TIMER_TBPRD_SERVO);
+    EPWM_setCounterCompareValue(st_obj->base, (EPWM_CounterCompareModule)st_obj->compareReg, EPWM_MAX_SERVO);
+    EPWM_setTimeBaseCounterMode(st_obj->base, EPWM_COUNTER_MODE_UP);
+    EPWM_setClockPrescaler(st_obj->base, EPWM_CLOCK_DIVIDER_4, EPWM_HSCLOCK_DIVIDER_8);
+
+    EPWM_setActionQualifierAction(st_obj->base, (EPWM_ActionQualifierOutputModule)EPWM_PARAM[3], EPWM_AQ_OUTPUT_HIGH, (EPWM_ActionQualifierOutputEvent)EPWM_PARAM[4]);
+    EPWM_setActionQualifierAction(st_obj->base, (EPWM_ActionQualifierOutputModule)EPWM_PARAM[3], EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);
+
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
+
+
+}
+
+
+//----
+void servoWrite(SERVO_t* servo, uint8_t angle){
+
+    if(angle > 180) angle = 180;
+
+    uint32_t min = ((5 * EPWM_MAX_SERVO)/100);
+
+    uint32_t diff = ((10 * EPWM_MAX_SERVO)/100) - min;
+
+    diff *= 2;
+
+    diff = (angle*diff)/180;
+
+    diff += (min/2);
+
+    diff = EPWM_MAX_SERVO - diff;
+    EPWM_setCounterCompareValue(servo->base, (EPWM_CounterCompareModule)servo->compareReg, diff);
+
+
+}
+
+
+//-----------------------------------------
+
+
+
+
+
+
+
+void ADCA_init(){
+
+   ADC_setVREF(ADCA_BASE, ADC_REFERENCE_INTERNAL, ADC_REFERENCE_3_3V);
+   ADC_setPrescaler(ADCA_BASE, ADC_CLK_DIV_2_0);
+   ADC_setInterruptPulseMode(ADCA_BASE, ADC_PULSE_END_OF_CONV);
+   ADC_enableConverter(ADCA_BASE);
+   DEVICE_DELAY_US(5000);
+
+}
+
+
+uint16_t ADCAread(ADCA_CH ch) {
+
+    uint16_t av = 0;
+
+    switch (ch) {
+               case A0: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN0, 8U); break;
+               case A1: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN1, 8U); break;
+               case A2: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN2, 8U); break;
+               case A3: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN3, 8U); break;
+               case A4: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN4, 8U); break;
+               case A5: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN5, 8U); break;
+               case A6: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN6, 8U); break;
+               case A7: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN7, 8U); break;
+               case A8: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN8, 8U); break;
+               case A9: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN9, 8U); break;
+               case A10: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN10, 8U); break;
+               case A11: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN11, 8U); break;
+               case A12: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN12, 8U); break;
+               case A13: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN13, 8U); break;
+               case A14: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN14, 8U); break;
+               case A15: ADC_setupSOC(ADCA_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_SW_ONLY, ADC_CH_ADCIN15, 8U); break;
+               default: return 0;
+           }
+
+
+    ADC_setInterruptSource(ADCA_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0);
+    ADC_clearInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1);
+    ADC_enableInterrupt(ADCA_BASE, ADC_INT_NUMBER1);
+
+    ADC_forceSOC(ADCA_BASE, ADC_SOC_NUMBER0);
+    while (!ADC_getInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1)) {}
+    ADC_clearInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1);
+    av = ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0);
+
+    return av;
+}
+
+
+void delay(long d){
+
+    d *= 1000;
+
+    DEVICE_DELAY_US(d);
+}
+
