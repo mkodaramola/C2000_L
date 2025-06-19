@@ -160,9 +160,6 @@ void servoWrite(SERVO_t* servo, uint8_t angle){
 
 
 
-
-
-
 void ADCA_init(){
 
    ADC_setVREF(ADCA_BASE, ADC_REFERENCE_INTERNAL, ADC_REFERENCE_3_3V);
@@ -209,6 +206,88 @@ uint16_t ADCAread(ADCA_CH ch) {
     av = ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0);
 
     return av;
+}
+
+//------------------------------ UART
+
+void pinConfig(uint32_t p){
+
+    switch (p){
+    case 2: GPIO_setPinConfig(GPIO_2_SCIA_TX); break;
+    case 8: GPIO_setPinConfig(GPIO_8_SCIA_TX); break;
+    case 16: GPIO_setPinConfig(GPIO_16_SCIA_TX); break;
+    case 24: GPIO_setPinConfig(GPIO_24_SCIA_TX); break;
+    case 29: GPIO_setPinConfig(GPIO_29_SCIA_TX); break;
+    case 37: GPIO_setPinConfig(GPIO_37_SCIA_TX); break;
+    case 3: GPIO_setPinConfig(GPIO_3_SCIA_RX); break;
+    case 17: GPIO_setPinConfig(GPIO_17_SCIA_RX); break;
+    case 25: GPIO_setPinConfig(GPIO_25_SCIA_RX); break;
+    case 28: GPIO_setPinConfig(GPIO_28_SCIA_RX); break;
+    case 35: GPIO_setPinConfig(GPIO_35_SCIA_RX); break;
+    case 9: GPIO_setPinConfig(GPIO_9_SCIA_RX); break;
+    default: ESTOP0;
+
+    }
+
+}
+
+void sciA_init(uint32_t TxPin, uint32_t RxPin, uint32_t baud){
+
+
+       // SCIA RX
+       pinConfig(RxPin);
+       GPIO_setDirectionMode(RxPin, GPIO_DIR_MODE_IN);
+       GPIO_setPadConfig(RxPin, GPIO_PIN_TYPE_STD);
+       GPIO_setQualificationMode(RxPin, GPIO_QUAL_ASYNC);
+
+
+       // SCIA TX
+       pinConfig(TxPin);
+       GPIO_setDirectionMode(TxPin, GPIO_DIR_MODE_OUT);
+       GPIO_setPadConfig(TxPin, GPIO_PIN_TYPE_STD);
+       GPIO_setQualificationMode(TxPin, GPIO_QUAL_ASYNC);
+
+       // SCI Configuration
+       SCI_performSoftwareReset(SCIA_BASE);
+       SCI_setConfig(SCIA_BASE, DEVICE_LSPCLK_FREQ, baud,
+                     (SCI_CONFIG_WLEN_8 | SCI_CONFIG_STOP_ONE | SCI_CONFIG_PAR_NONE));
+       SCI_resetChannels(SCIA_BASE);
+       SCI_resetRxFIFO(SCIA_BASE);
+       SCI_resetTxFIFO(SCIA_BASE);
+       SCI_clearInterruptStatus(SCIA_BASE, SCI_INT_TXFF | SCI_INT_RXFF);
+       SCI_enableFIFO(SCIA_BASE);
+       SCI_enableModule(SCIA_BASE);
+       SCI_performSoftwareReset(SCIA_BASE);
+
+#ifdef AUTOBAUD
+   SCI_lockAutobaud(SCIA_BASE);
+#endif
+
+
+}
+
+
+void sciA_write(unsigned char *msg){
+
+    SCI_writeCharArray(SCIA_BASE, (uint16_t*)msg, strlen(msg));
+}
+
+
+char sciA_read(){
+
+       uint16_t receivedChar;
+       uint16_t rxStatus;
+
+       receivedChar = SCI_readCharBlockingFIFO(SCIA_BASE);
+
+       rxStatus = SCI_getRxStatus(SCIA_BASE);
+       if ((rxStatus & SCI_RXSTATUS_ERROR) != 0)
+       {
+           ESTOP0;
+       }
+
+       return (char)(receivedChar & 0xFF);
+
 }
 
 
