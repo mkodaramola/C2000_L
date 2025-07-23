@@ -56,8 +56,11 @@ char sciA_read();
 
 
 
-
 //Delay
-void delay(long milliseconds);
+void delay(long);
+void delayMs_t0(uint32_t);
+void delayMs_t1(uint32_t);
+void delayMs_t2(uint32_t);
+
 
 #endif

@@ -291,6 +291,8 @@ char sciA_read(){
 }
 
 
+
+
 void delay(long d){
 
     d *= 1000;
@@ -298,3 +300,56 @@ void delay(long d){
     DEVICE_DELAY_US(d);
 }
 
+void delayMs_t0(uint32_t ms)
+{
+    CPUTimer_setEmulationMode(CPUTIMER0_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
+    CPUTimer_setPreScaler(CPUTIMER0_BASE, 0);
+    CPUTimer_stopTimer(CPUTIMER0_BASE);
+
+    uint32_t ticks = (DEVICE_SYSCLK_FREQ / 1000) * ms;
+
+    CPUTimer_setPeriod(CPUTIMER0_BASE, ticks);
+    CPUTimer_reloadTimerCounter(CPUTIMER0_BASE);
+    CPUTimer_clearOverflowFlag(CPUTIMER0_BASE);
+    CPUTimer_startTimer(CPUTIMER0_BASE);
+
+    while (!CPUTimer_getTimerOverflowStatus(CPUTIMER0_BASE));
+    CPUTimer_stopTimer(CPUTIMER0_BASE);
+}
+
+
+void delayMs_t1(uint32_t ms)
+{
+    CPUTimer_setEmulationMode(CPUTIMER1_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
+    CPUTimer_setPreScaler(CPUTIMER1_BASE, 0);
+    CPUTimer_stopTimer(CPUTIMER1_BASE);
+
+    uint32_t ticks = (DEVICE_SYSCLK_FREQ / 1000) * ms;
+
+    CPUTimer_setPeriod(CPUTIMER1_BASE, ticks);
+    CPUTimer_reloadTimerCounter(CPUTIMER1_BASE);
+    CPUTimer_clearOverflowFlag(CPUTIMER1_BASE);
+    CPUTimer_startTimer(CPUTIMER1_BASE);
+
+    while (!CPUTimer_getTimerOverflowStatus(CPUTIMER1_BASE));
+    CPUTimer_stopTimer(CPUTIMER1_BASE);
+}
+
+
+
+void delayMs_t2(uint32_t ms)
+{
+    CPUTimer_setEmulationMode(CPUTIMER2_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
+    CPUTimer_setPreScaler(CPUTIMER2_BASE, 0);
+    CPUTimer_stopTimer(CPUTIMER2_BASE);
+
+    uint32_t ticks = (DEVICE_SYSCLK_FREQ / 1000) * ms;
+
+    CPUTimer_setPeriod(CPUTIMER2_BASE, ticks);
+    CPUTimer_reloadTimerCounter(CPUTIMER2_BASE);
+    CPUTimer_clearOverflowFlag(CPUTIMER2_BASE);
+    CPUTimer_startTimer(CPUTIMER2_BASE);
+
+    while(!CPUTimer_getTimerOverflowStatus(CPUTIMER2_BASE));
+    CPUTimer_stopTimer(CPUTIMER2_BASE);
+}
