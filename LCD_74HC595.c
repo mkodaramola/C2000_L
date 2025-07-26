@@ -17,6 +17,17 @@ void lcd_string(const char*);
 void setCursor(bool,uint8_t);
 void lcd_clear();
 
+// Read bit at nth position 
+// value = (value >> n) & 0x01 
+
+// Set a bit to 1
+//value = value | (1 << n);
+
+// Set a bit to 0
+//value = value & ~(1 << n);
+
+//Toggle a bit
+//value = value ^ (1 << n);
 
 
 
