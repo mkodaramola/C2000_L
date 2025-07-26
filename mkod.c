@@ -353,3 +353,24 @@ void delayMs_t2(uint32_t ms)
     while(!CPUTimer_getTimerOverflowStatus(CPUTIMER2_BASE));
     CPUTimer_stopTimer(CPUTIMER2_BASE);
 }
+
+
+void configCPUTimer(uint32_t base, float cpuFreqHz, float periodMs)
+{
+    CPUTimer_setPeriod(base, 0xFFFFFFFF);
+    CPUTimer_setPreScaler(base, 0);
+    CPUTimer_stopTimer(base);
+    CPUTimer_reloadTimerCounter(base);
+
+
+    uint32_t periodCount = (uint32_t)((cpuFreqHz / 1000.0f) * periodMs);
+    CPUTimer_setPeriod(base, periodCount - 1);
+    CPUTimer_setPreScaler(base, 0);
+    CPUTimer_stopTimer(base);
+    CPUTimer_reloadTimerCounter(base);
+    CPUTimer_setEmulationMode(base, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
+    CPUTimer_enableInterrupt(base);
+
+    CPUTimer_startTimer(base);
+
+}

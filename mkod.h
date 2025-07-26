@@ -54,6 +54,8 @@ void sciA_init(uint32_t, uint32_t, uint32_t);
 void sciA_write(unsigned char*);
 char sciA_read();
 
+void configCPUTimer(uint32_t, float, float);
+
 
 
 //Delay
