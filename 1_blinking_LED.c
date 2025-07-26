@@ -7,10 +7,13 @@ void main(void)
 
     // Initialize GPIO and configure the GPIO pin as a push-pull output
     Device_initGPIO();
-    GPIO_setPadConfig(34, GPIO_PIN_TYPE_STD);
-    GPIO_setDirectionMode(34, GPIO_DIR_MODE_OUT);
 
-    GPIO_writePin(34, 0);
+    
+    GPIO_setPinConfig(GPIO_34_GPIO34); 
+    GPIO_setPadConfig(34U, GPIO_PIN_TYPE_STD);
+    GPIO_setDirectionMode(34U, GPIO_DIR_MODE_OUT);
+
+    GPIO_writePin(34U, 0);
 
 // Loop Forever
 for(;;){
