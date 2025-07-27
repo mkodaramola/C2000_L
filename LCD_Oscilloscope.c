@@ -21,6 +21,8 @@ volatile uint8_t data = 0;
 __interrupt void ecap1ISR(void);
 __interrupt void cpuTimer0ISR(void);
 
+//-----
+
 void shiftOut_LSB_First(uint8_t);
 
 void lcd_data(unsigned char);
